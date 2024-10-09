@@ -2,6 +2,8 @@ import { useState, ChangeEvent, FormEvent } from "react";
 import { Link } from "react-router-dom";
 import RadioButton from "../component/RadioButton";
 import InputField from "../component/InputField";
+import { useMutation } from "@apollo/client";
+import { SIGN_UP } from "../graphql/mutations/userMutations";
 
 interface SignUpData {
   name: string;
@@ -17,6 +19,8 @@ const SignUpPage = () => {
     password: "",
     gender: "",
   });
+
+  const [signup, { loading, error }] = useMutation(SIGN_UP);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
     const { name, value, type } = e.target;
@@ -36,7 +40,15 @@ const SignUpPage = () => {
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    console.log(signUpData);
+    try {
+      await signup({
+        variables: {
+          input: signUpData,
+        },
+      });
+    } catch (error) {
+      console.error("Error", error);
+    }
   };
 
   return (
@@ -63,7 +75,6 @@ const SignUpPage = () => {
                 value={signUpData.username}
                 onChange={handleChange}
               />
-
               <InputField
                 label="Password"
                 id="password"
@@ -95,11 +106,17 @@ const SignUpPage = () => {
                 <button
                   type="submit"
                   className="w-full bg-black text-white p-2 rounded-md hover:bg-gray-800 focus:outline-none focus:bg-black  focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={loading} // Disable button when loading
                 >
-                  Sign Up
+                  {loading ? "Signing up..." : "Sign Up"} 
                 </button>
               </div>
             </form>
+            {error && (
+              <div className="mt-4 text-red-500 text-center">
+                <p>Error signing up: {error.message}</p> {/* Show error message */}
+              </div>
+            )}
             <div className="mt-4 text-sm text-gray-600 text-center">
               <p>
                 Already have an account?{" "}
