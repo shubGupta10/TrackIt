@@ -66,19 +66,30 @@ const userResolver = {
             }
         },
 
-        logout: async (_parent: unknown, _args: unknown, { context }: any) => {
+        logout: async (_parent: unknown, _args: unknown, context: any) => {
             try {
-                await context.logout();
-                context.req.session.destroy((error: any) => {
-                    if (error) throw new Error("Session destruction failed");
+              if (!context.req || !context.res) {
+                throw new Error('Invalid context');
+              }
+      
+              if (context.req.session) {
+                await new Promise<void>((resolve, reject) => {
+                  context.req.session.destroy((error: any) => {
+                    if (error) reject(error);
+                    else resolve();
+                  });
                 });
-                context.res.clearCookie("connect.sid");
-                return { message: "User logout successful" };
+              }
+      
+              context.res.clearCookie("connect.sid");
+              
+              return { message: "User logout successful" };
             } catch (error: any) {
-                console.error("User logout failed", error);
-                throw new Error(error.message || "Internal Server error");
+              console.error("User logout failed", error);
+              throw new Error(error.message || "Internal Server error");
             }
-        }
+          }
+        
         
     },
     // Resolver logic for queries

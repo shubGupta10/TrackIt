@@ -44,13 +44,21 @@ const userResolver = {
                 throw new Error(error.message || "Internal Server error");
             }
         },
-        logout: async (_parent, _args, { context }) => {
+        logout: async (_parent, _args, context) => {
             try {
-                await context.logout();
-                context.req.session.destroy((error) => {
-                    if (error)
-                        throw new Error("Session destruction failed");
-                });
+                if (!context.req || !context.res) {
+                    throw new Error('Invalid context');
+                }
+                if (context.req.session) {
+                    await new Promise((resolve, reject) => {
+                        context.req.session.destroy((error) => {
+                            if (error)
+                                reject(error);
+                            else
+                                resolve();
+                        });
+                    });
+                }
                 context.res.clearCookie("connect.sid");
                 return { message: "User logout successful" };
             }

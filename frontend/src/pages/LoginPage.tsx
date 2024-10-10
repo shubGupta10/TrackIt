@@ -1,12 +1,20 @@
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import InputField from "../component/InputField";
+import { useMutation } from "@apollo/client";
+import { LOGIN } from "../graphql/mutations/userMutations";
+import { LoginMutation } from "../generated/graphql";
+import toast from "react-hot-toast";
 
 const LoginPage = () => {
 	const [loginData, setLoginData] = useState({
 		username: "",
 		password: "",
 	});
+
+	const [login, {loading}] = useMutation<LoginMutation>(LOGIN, {
+		refetchQueries: ["GetAuthenticatedUser"]
+	})
 
 	const handleChange = (e: any) => {
 		const { name, value } = e.target;
@@ -16,9 +24,14 @@ const LoginPage = () => {
 		}));
 	};
 
-	const handleSubmit = (e: any) => {
+	const handleSubmit = async (e: any) => {
 		e.preventDefault();
-		console.log(loginData);
+		if(!loginData.username || !loginData.password) return toast.error("Please fill the full form");
+		try {
+			await login({variables: {input: loginData}})
+		} catch (error) {
+			console.error("Error loggin in", error) 
+		}
 	};
 
 	return (
@@ -53,8 +66,9 @@ const LoginPage = () => {
 									className='w-full bg-black text-white p-2 rounded-md hover:bg-gray-800 focus:outline-none focus:bg-black  focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 transition-colors duration-300
 										disabled:opacity-50 disabled:cursor-not-allowed
 									'
+									disabled={loading}
 								>
-									Login
+									{loading ? "Loading..." : "Login"}
 								</button>
 							</div>
 						</form>
