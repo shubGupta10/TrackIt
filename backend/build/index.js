@@ -47,6 +47,7 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 await server.start();
+//middleware setup
 app.use('/graphql', cors({
     origin: "http://localhost:3000",
     credentials: true
