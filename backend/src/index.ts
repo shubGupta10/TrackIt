@@ -59,6 +59,7 @@ app.use(passport.session());
 
 await server.start();
 
+//middleware setup
 app.use(
     '/graphql',
     cors({
