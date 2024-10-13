@@ -1,3 +1,4 @@
+//user typedefs
 const userTypeDefs = `#graphql
    #type definition of user
    type User {
